@@ -1,0 +1,1012 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Library Management System</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:#0f0e0c; --surface:#1a1915; --surface2:#242320; --border:#2e2c28;
+    --gold:#c9a84c; --gold-light:#e8c97a; --cream:#f5f0e8;
+    --text:#e8e4dc; --muted:#8a8680; --red:#c94c4c; --green:#4ca86b; --r:4px;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+
+  .pg{display:none;min-height:100vh}
+  .pg.on{display:flex}
+
+  #pg-app{flex-direction:row}
+  .sidebar{width:220px;background:var(--surface);border-right:1px solid var(--border);padding:24px 0;flex-shrink:0;overflow-y:auto}
+  .sb-logo{padding:0 20px 20px;border-bottom:1px solid var(--border);margin-bottom:12px}
+  .sb-logo h2{font-family:'Playfair Display',serif;font-size:14px;color:var(--gold);line-height:1.4}
+  .nav-sec{margin-bottom:4px}
+  .nav-lbl{font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);padding:8px 20px 3px}
+  .ni{display:block;padding:7px 20px;font-size:13px;color:var(--muted);cursor:pointer;border-left:2px solid transparent;transition:all .15s;user-select:none}
+  .ni:hover,.ni.act{color:var(--text);background:var(--surface2);border-left-color:var(--gold)}
+  .ni.sub{padding-left:30px;font-size:12px}
+  .main-area{flex:1;overflow:auto;display:flex;flex-direction:column}
+
+  .topbar{background:var(--surface);border-bottom:1px solid var(--border);padding:14px 28px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+  .tb-title{font-family:'Playfair Display',serif;font-size:20px;color:var(--cream)}
+  .tb-sub{font-size:12px;color:var(--muted);margin-top:2px}
+  .tb-right{display:flex;gap:8px;align-items:center}
+  .badge{font-size:11px;padding:3px 10px;border-radius:20px;background:var(--surface2);border:1px solid var(--border);color:var(--muted)}
+  .badge.adm{border-color:var(--gold);color:var(--gold)}
+
+  .btn{display:inline-flex;align-items:center;gap:6px;padding:8px 16px;border-radius:var(--r);font-size:13px;font-family:inherit;cursor:pointer;border:none;transition:all .15s;font-weight:500}
+  .btn-p{background:var(--gold);color:#0f0e0c}.btn-p:hover{background:var(--gold-light)}
+  .btn-g{background:transparent;color:var(--muted);border:1px solid var(--border)}.btn-g:hover{background:var(--surface2);color:var(--text)}
+  .btn-sm{padding:5px 10px;font-size:12px}
+
+  .content{padding:28px;flex:1}
+  .pg-title{font-family:'Playfair Display',serif;font-size:20px;color:var(--cream);margin-bottom:3px}
+  .pg-sub{font-size:13px;color:var(--muted);margin-bottom:22px}
+
+  .card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:22px;margin-bottom:18px}
+  .card-title{font-size:12px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.8px;margin-bottom:14px}
+
+  .stat-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:22px}
+  .stat-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:18px}
+  .stat-num{font-family:'Playfair Display',serif;font-size:30px;color:var(--gold)}
+  .stat-lbl{font-size:12px;color:var(--muted);margin-top:3px}
+
+  .tbl-wrap{overflow-x:auto}
+  table{width:100%;border-collapse:collapse;font-size:13px}
+  th{text-align:left;padding:9px 13px;font-size:11px;letter-spacing:.7px;text-transform:uppercase;color:var(--muted);border-bottom:1px solid var(--border);font-weight:500}
+  td{padding:11px 13px;border-bottom:1px solid var(--border);color:var(--text);vertical-align:middle}
+  tr:last-child td{border-bottom:none}
+  tr:hover td{background:var(--surface2)}
+  .pill{display:inline-block;padding:2px 8px;border-radius:20px;font-size:11px;font-weight:500}
+  .p-avail{background:rgba(76,168,107,.15);color:var(--green)}
+  .p-issued{background:rgba(201,168,76,.15);color:var(--gold)}
+  .p-over{background:rgba(201,76,76,.15);color:var(--red)}
+  .p-inactive{background:rgba(138,134,128,.15);color:var(--muted)}
+
+  .fg{display:flex;flex-direction:column;gap:5px}
+  .f2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+  .f3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px}
+  .full{grid-column:1/-1}
+  label{font-size:12px;color:var(--muted);font-weight:500}
+  input[type=text],input[type=date],input[type=password],select,textarea{
+    background:var(--surface2);border:1px solid var(--border);border-radius:var(--r);
+    color:var(--text);font-family:inherit;font-size:13px;padding:8px 11px;width:100%;transition:border-color .15s
+  }
+  input:focus,select:focus,textarea:focus{outline:none;border-color:var(--gold)}
+  input[readonly]{opacity:.65;cursor:default}
+  textarea{resize:vertical;min-height:70px}
+  .rg{display:flex;gap:14px;flex-wrap:wrap;padding-top:3px}
+  .ri{display:flex;align-items:center;gap:6px;cursor:pointer;font-size:13px;color:var(--text)}
+  .ri input{width:auto;accent-color:var(--gold)}
+  .ci{display:flex;align-items:center;gap:7px;font-size:13px;cursor:pointer;color:var(--text)}
+  .ci input{width:auto;accent-color:var(--gold)}
+  .factions{display:flex;gap:10px;justify-content:flex-end;margin-top:16px}
+  .err{color:var(--red);font-size:12px;display:none;padding:6px 0}
+  .info-box{background:rgba(201,168,76,.08);border:1px solid rgba(201,168,76,.25);border-radius:var(--r);padding:10px 13px;font-size:13px;color:var(--gold);margin-bottom:14px}
+
+  #pg-login{align-items:center;justify-content:center;position:relative;overflow:hidden}
+  .lg-bg{position:absolute;inset:0;background:radial-gradient(ellipse at 60% 30%,rgba(201,168,76,.07) 0%,transparent 60%);pointer-events:none}
+  .lg-card{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:44px 38px;width:370px;position:relative}
+  .lg-title{font-family:'Playfair Display',serif;font-size:24px;color:var(--cream);margin-bottom:3px}
+  .lg-sub{font-size:13px;color:var(--muted);margin-bottom:28px}
+  .lg-tabs{display:flex;gap:8px;margin-bottom:24px}
+  .lg-tab{flex:1;padding:7px;border:1px solid var(--border);border-radius:var(--r);background:transparent;color:var(--muted);font-family:inherit;font-size:13px;cursor:pointer;transition:all .15s}
+  .lg-tab.on{background:var(--gold);color:#0f0e0c;border-color:var(--gold);font-weight:600}
+
+  .txn-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;max-width:560px}
+  .txn-c{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:22px;cursor:pointer;transition:all .15s}
+  .txn-c:hover{border-color:var(--gold);background:var(--surface2)}
+  .txn-icon{font-size:26px;margin-bottom:10px}
+  .txn-name{font-size:14px;font-weight:600;color:var(--cream);margin-bottom:3px}
+  .txn-desc{font-size:12px;color:var(--muted)}
+
+  .code-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:22px}
+  .code-c{background:var(--surface2);border:1px solid var(--border);border-radius:var(--r);padding:11px;text-align:center}
+  .code-cat{font-size:11px;color:var(--muted);margin-bottom:3px}
+  .code-rng{font-size:10px;color:var(--gold);font-family:monospace}
+
+  .ctr-pg{flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:14px}
+  .big-ico{font-size:60px}
+  .ctr-title{font-family:'Playfair Display',serif;font-size:26px;color:var(--cream)}
+  .ctr-sub{font-size:14px;color:var(--muted);max-width:340px}
+
+  .srow{display:flex;gap:8px}
+  .srow input{flex:1}
+
+  ::-webkit-scrollbar{width:5px}
+  ::-webkit-scrollbar-track{background:var(--bg)}
+  ::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
+</style>
+</head>
+<body>
+
+<!-- =====================================================================
+  STATE — In-memory database. NO external database is connected.
+  All data is stored in the DB object in JavaScript memory.
+  Data resets on page refresh. This is a front-end only application.
+  ===================================================================== -->
+<script>
+const DB = {
+  currentUser: null,
+  books: [
+    {serial:'SC-B-000001',name:'A Brief History of Time',      author:'Stephen Hawking',     cat:'Science',             status:'Available',cost:450,procDate:'2023-01-15',type:'book'},
+    {serial:'SC-B-000002',name:'The Selfish Gene',             author:'Richard Dawkins',     cat:'Science',             status:'Issued',   cost:380,procDate:'2023-02-10',type:'book'},
+    {serial:'EC-B-000001',name:'Principles of Economics',      author:'N. Gregory Mankiw',   cat:'Economics',           status:'Available',cost:620,procDate:'2023-03-05',type:'book'},
+    {serial:'FC-B-000001',name:'The Great Gatsby',             author:'F. Scott Fitzgerald', cat:'Fiction',             status:'Available',cost:250,procDate:'2022-11-20',type:'book'},
+    {serial:'FC-B-000002',name:'1984',                         author:'George Orwell',       cat:'Fiction',             status:'Issued',   cost:280,procDate:'2022-12-01',type:'book'},
+    {serial:'CH-B-000001',name:"Charlotte's Web",              author:'E.B. White',          cat:'Children',            status:'Available',cost:180,procDate:'2023-04-01',type:'book'},
+    {serial:'PD-B-000001',name:'Atomic Habits',                author:'James Clear',         cat:'Personal Development',status:'Available',cost:420,procDate:'2023-05-10',type:'book'},
+    {serial:'SC-M-000001',name:'Cosmos: A SpaceTime Odyssey',  author:'Neil deGrasse Tyson', cat:'Science',             status:'Available',cost:300,procDate:'2023-06-15',type:'movie'},
+    {serial:'FC-M-000001',name:'The Dark Knight',              author:'Christopher Nolan',   cat:'Fiction',             status:'Available',cost:350,procDate:'2023-07-01',type:'movie'},
+  ],
+  members: [
+    {id:'MEM-001',firstName:'Arjun', lastName:'Sharma',contact:'9876543210',address:'B-12, Sector 62, Noida',aadhar:'1234-5678-9012',startDate:'2024-01-01',endDate:'2025-01-01',status:'Active',  fine:0},
+    {id:'MEM-002',firstName:'Priya', lastName:'Singh', contact:'9876543211',address:'C-45, Sector 18, Noida',aadhar:'9876-5432-1098',startDate:'2024-01-15',endDate:'2025-01-15',status:'Active',  fine:25},
+    {id:'MEM-003',firstName:'Rahul', lastName:'Verma', contact:'9876543212',address:'A-7, Sector 50, Noida', aadhar:'1111-2222-3333',startDate:'2023-06-01',endDate:'2024-05-31',status:'Inactive',fine:0},
+  ],
+  issues: [
+    {id:'ISS-001',serial:'SC-B-000002',bookName:'The Selfish Gene',author:'Richard Dawkins',memberId:'MEM-001',memberName:'Arjun Sharma',issueDate:'2024-04-01',dueDate:'2024-04-16',actualReturn:null},
+    {id:'ISS-002',serial:'FC-B-000002',bookName:'1984',            author:'George Orwell',  memberId:'MEM-002',memberName:'Priya Singh', issueDate:'2024-03-20',dueDate:'2024-04-04',actualReturn:null},
+  ],
+  requests: [
+    {id:'REQ-001',memberId:'MEM-001',bookName:'Atomic Habits',   reqDate:'2024-04-10',fulfilledDate:null},
+    {id:'REQ-002',memberId:'MEM-002',bookName:'The Great Gatsby', reqDate:'2024-04-12',fulfilledDate:'2024-04-13'},
+  ],
+  users: [
+    {id:'adm', name:'Admin User',  role:'admin',pass:'adm', active:true},
+    {id:'user',name:'Library User',role:'user', pass:'user',active:true},
+  ],
+  today(){ return new Date().toISOString().split('T')[0]; },
+  addDays(d,n){ const x=new Date(d);x.setDate(x.getDate()+n);return x.toISOString().split('T')[0]; },
+  calcFine(dueDate,actualDate){ const d=Math.floor((new Date(actualDate)-new Date(dueDate))/864e5); return d>0?d*2:0; },
+  nextId(arr,pfx){ return pfx+'-'+(arr.length+1).toString().padStart(3,'0'); },
+};
+</script>
+
+<!-- ====== LOGIN ====== -->
+<div id="pg-login" class="pg on">
+  <div class="lg-bg"></div>
+  <div class="lg-card">
+    <div class="lg-title">Library Management System</div>
+    <div class="lg-sub">Sign in to continue</div>
+    <div class="lg-tabs">
+      <button class="lg-tab on" id="tab-adm" onclick="switchTab('adm')">Admin</button>
+      <button class="lg-tab"    id="tab-usr" onclick="switchTab('usr')">User</button>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:12px">
+      <div class="fg"><label>User ID</label><input type="text" id="lg-uid" value="adm" autocomplete="off"></div>
+      <div class="fg"><label>Password</label><input type="password" id="lg-pwd" value="adm" onkeydown="if(event.key==='Enter')doLogin()"></div>
+    </div>
+    <div class="err" id="lg-err" style="display:none"></div>
+    <button class="btn btn-p" style="width:100%;justify-content:center;margin-top:16px" onclick="doLogin()">Login</button>
+    <div style="margin-top:12px;font-size:11px;color:var(--muted);text-align:center">Admin: adm / adm &nbsp;|&nbsp; User: user / user</div>
+  </div>
+</div>
+
+<!-- ====== APP SHELL ====== -->
+<div id="pg-app" class="pg">
+  <div class="sidebar">
+    <div class="sb-logo"><h2>Library<br>Management<br>System</h2></div>
+    <div id="nav-area"></div>
+  </div>
+  <div class="main-area">
+    <div class="topbar">
+      <div><div class="tb-title" id="tb-title">Dashboard</div><div class="tb-sub" id="tb-sub"></div></div>
+      <div class="tb-right">
+        <span class="badge" id="tb-badge">User</span>
+        <button class="btn btn-g btn-sm" onclick="doLogout()">Log Out</button>
+      </div>
+    </div>
+    <div class="content" id="main-content"></div>
+  </div>
+</div>
+
+<!-- ====== SUCCESS ====== -->
+<div id="pg-success" class="pg ctr-pg">
+  <div class="big-ico">✅</div>
+  <div class="ctr-title">Transaction Completed</div>
+  <div class="ctr-sub" id="success-msg">Done.</div>
+  <button class="btn btn-p" onclick="goHome()">Go to Home</button>
+</div>
+
+<!-- ====== CANCEL ====== -->
+<div id="pg-cancel" class="pg ctr-pg">
+  <div class="big-ico">❌</div>
+  <div class="ctr-title">Transaction Cancelled</div>
+  <div class="ctr-sub">The transaction has been cancelled.</div>
+  <button class="btn btn-p" onclick="goHome()">Go to Home</button>
+</div>
+
+<!-- ====== LOGOUT ====== -->
+<div id="pg-logout" class="pg ctr-pg">
+  <div class="big-ico">👋</div>
+  <div class="ctr-title">Logged Out</div>
+  <div class="ctr-sub">You have successfully logged out.</div>
+  <button class="btn btn-p" onclick="showPg('login')">Login Again</button>
+</div>
+
+<script>
+/* ---- helpers ---- */
+function showPg(n){ document.querySelectorAll('.pg').forEach(p=>p.classList.remove('on')); document.getElementById('pg-'+n).classList.add('on'); }
+function goHome(){ showPg('app'); nav(DB.currentUser.role==='admin'?'home-adm':'home-usr'); }
+function setTb(t,s){ document.getElementById('tb-title').textContent=t; document.getElementById('tb-sub').textContent=s||''; }
+function v(id){ return (document.getElementById(id)?.value||'').trim(); }
+function esc(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;'); }
+function showErr(id,msg){ const e=document.getElementById(id); if(!e)return; e.textContent=msg; e.style.display=msg?'block':'none'; }
+
+/* ---- login ---- */
+function switchTab(t){
+  document.querySelectorAll('.lg-tab').forEach(b=>b.classList.remove('on'));
+  document.getElementById('tab-'+(t==='adm'?'adm':'usr')).classList.add('on');
+  document.getElementById('lg-uid').value=t==='adm'?'adm':'user';
+  document.getElementById('lg-pwd').value=t==='adm'?'adm':'user';
+}
+function doLogin(){
+  const uid=v('lg-uid'), pwd=document.getElementById('lg-pwd').value.trim();
+  if(!uid||!pwd){ showErr('lg-err','Please enter User ID and Password.'); return; }
+  const u=DB.users.find(u=>u.id===uid&&u.pass===pwd&&u.active);
+  if(!u){ showErr('lg-err','Invalid credentials.'); return; }
+  showErr('lg-err','');
+  DB.currentUser=u;
+  initApp();
+  showPg('app');
+}
+function doLogout(){ DB.currentUser=null; showPg('logout'); }
+
+/* ---- app init ---- */
+function initApp(){
+  const u=DB.currentUser;
+  const b=document.getElementById('tb-badge');
+  b.textContent=u.role==='admin'?'Admin':'User';
+  b.className='badge'+(u.role==='admin'?' adm':'');
+  buildNav(u.role);
+  nav(u.role==='admin'?'home-adm':'home-usr');
+}
+
+function buildNav(role){
+  let h='';
+  if(role==='admin'){
+    h+=ns('Home',   [['home-adm','Dashboard']]);
+    h+=ns('Maintenance',[
+      ['add-membership','Add Membership',1],
+      ['upd-membership','Update Membership',1],
+      ['add-book',      'Add Book / Movie',1],
+      ['upd-book',      'Update Book / Movie',1],
+      ['user-mgmt',     'User Management',1],
+    ]);
+  } else {
+    h+=ns('Home',[['home-usr','Dashboard']]);
+  }
+  h+=ns('Transactions',[
+    ['book-avail', 'Book Availability',1],
+    ['book-issue', 'Issue Book',1],
+    ['return-book','Return Book',1],
+    ['pay-fine',   'Pay Fine',1],
+  ]);
+  h+=ns('Reports',[
+    ['rep-books',   'Master: Books',1],
+    ['rep-movies',  'Master: Movies',1],
+    ['rep-members', 'Memberships',1],
+    ['rep-active',  'Active Issues',1],
+    ['rep-overdue', 'Overdue Returns',1],
+    ['rep-requests','Issue Requests',1],
+  ]);
+  document.getElementById('nav-area').innerHTML=h;
+}
+function ns(lbl,items){
+  return `<div class="nav-sec"><div class="nav-lbl">${lbl}</div>`+
+    items.map(([id,t,sub])=>`<span class="ni${sub?' sub':''}" id="ni-${id}" onclick="nav('${id}')">${t}</span>`).join('')+'</div>';
+}
+
+function nav(view){
+  document.querySelectorAll('.ni').forEach(n=>n.classList.remove('act'));
+  const el=document.getElementById('ni-'+view); if(el) el.classList.add('act');
+  const c=document.getElementById('main-content');
+  const map={
+    'home-adm':     ()=>pgHomeAdm(c),
+    'home-usr':     ()=>pgHomeUsr(c),
+    'book-avail':   ()=>pgBookAvail(c),
+    'book-issue':   ()=>pgBookIssue(c,'','',''),
+    'return-book':  ()=>pgReturnBook(c),
+    'pay-fine':     ()=>pgPayFineStandalone(c),
+    'rep-books':    ()=>pgRepBooks(c),
+    'rep-movies':   ()=>pgRepMovies(c),
+    'rep-members':  ()=>pgRepMembers(c),
+    'rep-active':   ()=>pgRepActive(c),
+    'rep-overdue':  ()=>pgRepOverdue(c),
+    'rep-requests': ()=>pgRepRequests(c),
+    'add-membership':()=>pgAddMembership(c),
+    'upd-membership':()=>pgUpdMembership(c),
+    'add-book':     ()=>pgAddBook(c),
+    'upd-book':     ()=>pgUpdBook(c),
+    'user-mgmt':    ()=>pgUserMgmt(c),
+  };
+  (map[view]||function(){c.innerHTML='<p style="color:var(--muted)">Not found.</p>'})();
+}
+
+/* ========= HOME ========= */
+function pgHomeAdm(c){
+  setTb('Admin Dashboard','Library Management System');
+  const bk=DB.books.filter(b=>b.type==='book').length;
+  const mv=DB.books.filter(b=>b.type==='movie').length;
+  const am=DB.members.filter(m=>m.status==='Active').length;
+  const ai=DB.issues.filter(i=>!i.actualReturn).length;
+  const ov=DB.issues.filter(i=>!i.actualReturn&&i.dueDate<DB.today()).length;
+  c.innerHTML=`
+    <div class="pg-title">Admin Dashboard</div><div class="pg-sub">Welcome, ${esc(DB.currentUser.name)}</div>
+    <div class="stat-grid">
+      <div class="stat-card"><div class="stat-num">${bk}</div><div class="stat-lbl">Books</div></div>
+      <div class="stat-card"><div class="stat-num">${mv}</div><div class="stat-lbl">Movies</div></div>
+      <div class="stat-card"><div class="stat-num">${am}</div><div class="stat-lbl">Active Members</div></div>
+      <div class="stat-card"><div class="stat-num" style="color:${ov>0?'var(--red)':'var(--gold)'}">${ai}</div>
+        <div class="stat-lbl">Active Issues${ov>0?' ('+ov+' overdue)':''}</div></div>
+    </div>
+    <div style="margin-bottom:8px;font-size:12px;color:var(--muted);letter-spacing:.8px;text-transform:uppercase">Category Codes</div>
+    <div class="code-grid">${[['Science','SC'],['Economics','EC'],['Fiction','FC'],['Children','CH'],['Personal Dev','PD']].map(([n,cd])=>`
+      <div class="code-c"><div class="code-cat">${n}</div><div class="code-rng">${cd}(B/M)000001–000004</div></div>`).join('')}</div>
+    <div class="card"><div class="card-title">Recent Issues</div><div class="tbl-wrap">${issuesTbl(DB.issues.slice(0,5))}</div></div>`;
+}
+
+function pgHomeUsr(c){
+  setTb('User Dashboard','Library Management System');
+  c.innerHTML=`
+    <div class="pg-title">Welcome, ${esc(DB.currentUser.name)}</div><div class="pg-sub">Explore the library</div>
+    <div class="stat-grid" style="grid-template-columns:repeat(3,1fr)">
+      <div class="stat-card"><div class="stat-num">${DB.books.filter(b=>b.type==='book').length}</div><div class="stat-lbl">Books</div></div>
+      <div class="stat-card"><div class="stat-num">${DB.books.filter(b=>b.type==='movie').length}</div><div class="stat-lbl">Movies</div></div>
+      <div class="stat-card"><div class="stat-num">${DB.books.filter(b=>b.status==='Available').length}</div><div class="stat-lbl">Available</div></div>
+    </div>
+    <div class="txn-grid">
+      <div class="txn-c" onclick="nav('book-avail')"><div class="txn-icon">🔍</div><div class="txn-name">Book Availability</div><div class="txn-desc">Search for a book or movie</div></div>
+      <div class="txn-c" onclick="nav('book-issue')"><div class="txn-icon">📖</div><div class="txn-name">Issue Book</div><div class="txn-desc">Borrow a book or movie</div></div>
+      <div class="txn-c" onclick="nav('return-book')"><div class="txn-icon">↩️</div><div class="txn-name">Return Book</div><div class="txn-desc">Return a borrowed item</div></div>
+      <div class="txn-c" onclick="nav('pay-fine')"><div class="txn-icon">💰</div><div class="txn-name">Pay Fine</div><div class="txn-desc">Clear pending fines</div></div>
+    </div>`;
+}
+
+/* ========= BOOK AVAILABILITY ========= */
+function pgBookAvail(c){
+  setTb('Book Availability','Check if a book/movie is available');
+  window._selSerial=''; window._selBook=''; window._selAuthor='';
+  c.innerHTML=`
+    <div class="pg-title">Book Availability</div>
+    <div class="pg-sub">Select at least one field then search</div>
+    <div class="card">
+      <div class="f2">
+        <div class="fg"><label>Enter Book Name</label>
+          <select id="av-name"><option value="">-- Any --</option>
+            ${[...new Set(DB.books.map(b=>b.name))].map(n=>`<option value="${esc(n)}">${esc(n)}</option>`).join('')}
+          </select></div>
+        <div class="fg"><label>Enter Author Name</label>
+          <select id="av-author"><option value="">-- Any --</option>
+            ${[...new Set(DB.books.map(b=>b.author))].map(a=>`<option value="${esc(a)}">${esc(a)}</option>`).join('')}
+          </select></div>
+      </div>
+      <div class="err" id="av-err">Please select a Book Name or Author before searching.</div>
+      <div class="factions">
+        <button class="btn btn-g" onclick="nav(DB.currentUser.role==='admin'?'home-adm':'home-usr')">Cancel</button>
+        <button class="btn btn-p" onclick="doAvailSearch()">Search</button>
+      </div>
+    </div>
+    <div id="av-results"></div>`;
+}
+
+function doAvailSearch(){
+  const name=v('av-name'), author=v('av-author');
+  if(!name&&!author){ showErr('av-err','Please select a Book Name or Author before searching.'); return; }
+  showErr('av-err','');
+  const res=DB.books.filter(b=>(!name||b.name===name)&&(!author||b.author===author));
+  const r=document.getElementById('av-results');
+  if(!res.length){ r.innerHTML=`<div class="info-box">No results found for your search.</div>`; return; }
+  r.innerHTML=`<div class="card">
+    <div class="card-title">Search Results</div>
+    <div class="tbl-wrap"><table>
+      <thead><tr><th>Book / Movie Name</th><th>Author / Director</th><th>Serial Number</th><th>Available</th><th>Select to Issue</th></tr></thead>
+      <tbody>${res.map((b,i)=>`<tr>
+        <td>${esc(b.name)}</td><td>${esc(b.author)}</td>
+        <td style="font-family:monospace;font-size:11px">${b.serial}</td>
+        <td><span class="pill ${b.status==='Available'?'p-avail':'p-issued'}">${b.status==='Available'?'Y':'N'}</span></td>
+        <td>${b.status==='Available'?`<input type="radio" name="sel-bk" id="sel-bk-${i}" onchange="window._selSerial='${b.serial}';window._selBook='${esc(b.name)}';window._selAuthor='${esc(b.author)}';">`:'—'}</td>
+      </tr>`).join('')}</tbody>
+    </table></div>
+    <div class="factions" style="margin-top:14px">
+      <button class="btn btn-p" onclick="goIssueSelected()">Issue Selected Book →</button>
+    </div>
+  </div>`;
+}
+
+function goIssueSelected(){
+  if(!window._selSerial){ alert('Please select a book using the radio button first.'); return; }
+  pgBookIssue(document.getElementById('main-content'), window._selBook, window._selAuthor, window._selSerial);
+}
+
+/* ========= BOOK ISSUE ========= */
+function pgBookIssue(c, preBook, preAuthor, preSerial){
+  setTb('Issue Book','Borrow a book or movie from the library');
+  const today=DB.today(), maxRet=DB.addDays(today,15);
+  const avail=DB.books.filter(b=>b.status==='Available');
+  c.innerHTML=`
+    <div class="pg-title">Book Issue</div>
+    <div class="pg-sub">All fields except Remarks are required</div>
+    <div class="card">
+      <div class="f2" style="gap:14px">
+        <div class="fg"><label>Book / Movie Name *</label>
+          <select id="bi-book" onchange="biAutoPop()">
+            <option value="">-- Select Book / Movie --</option>
+            ${avail.map(b=>`<option value="${b.serial}" data-author="${esc(b.author)}" ${b.serial===preSerial?'selected':''}>${esc(b.name)} (${b.serial})</option>`).join('')}
+          </select></div>
+        <div class="fg"><label>Author / Director (auto-populated, non-editable)</label>
+          <input type="text" id="bi-author" readonly value="${esc(preAuthor||'')}"></div>
+        <div class="fg"><label>Membership ID *</label>
+          <select id="bi-member">
+            <option value="">-- Select Member --</option>
+            ${DB.members.filter(m=>m.status==='Active').map(m=>`<option value="${m.id}">${m.id} – ${esc(m.firstName+' '+m.lastName)}</option>`).join('')}
+          </select></div>
+        <div class="fg"><label>Issue Date * (cannot be earlier than today)</label>
+          <input type="date" id="bi-issue" value="${today}" min="${today}" onchange="biUpdateRet()"></div>
+        <div class="fg"><label>Return Date (auto: +15 days; cannot exceed 15 days from issue date)</label>
+          <input type="date" id="bi-return" value="${maxRet}" min="${today}" max="${maxRet}"></div>
+        <div class="fg"><label>Remarks (Non-Mandatory)</label>
+          <input type="text" id="bi-remarks" placeholder="Optional"></div>
+      </div>
+      <div class="err" id="bi-err"></div>
+      <div class="factions">
+        <button class="btn btn-g" onclick="showPg('cancel')">Cancel</button>
+        <button class="btn btn-p" onclick="submitIssue()">Issue Book</button>
+      </div>
+    </div>`;
+  // if coming from search results, auto-populate author
+  if(preSerial){
+    setTimeout(()=>{
+      const sel=document.getElementById('bi-book');
+      for(let i=0;i<sel.options.length;i++){
+        if(sel.options[i].value===preSerial){sel.selectedIndex=i; document.getElementById('bi-author').value=sel.options[i].dataset.author||''; break;}
+      }
+    },0);
+  }
+}
+
+function biAutoPop(){
+  const s=document.getElementById('bi-book');
+  document.getElementById('bi-author').value=s.options[s.selectedIndex]?.dataset.author||'';
+}
+function biUpdateRet(){
+  const d=v('bi-issue'); if(!d) return;
+  const maxR=DB.addDays(d,15);
+  const ri=document.getElementById('bi-return');
+  ri.value=maxR; ri.max=maxR; ri.min=d;
+}
+
+function submitIssue(){
+  const sel=document.getElementById('bi-book');
+  const serial=sel.value;
+  const bookName=sel.options[sel.selectedIndex]?.text?.split(' (')[0]||'';
+  const author=v('bi-author');
+  const member=v('bi-member');
+  const issDate=v('bi-issue');
+  const retDate=v('bi-return');
+  if(!serial){ showErr('bi-err','Name of book is required.'); return; }
+  if(!member){ showErr('bi-err','Membership ID is required.'); return; }
+  if(!issDate){ showErr('bi-err','Issue Date is required.'); return; }
+  if(issDate<DB.today()){ showErr('bi-err','Issue Date cannot be earlier than today.'); return; }
+  if(retDate>DB.addDays(issDate,15)){ showErr('bi-err','Return Date cannot exceed 15 days from Issue Date.'); return; }
+  showErr('bi-err','');
+  const bk=DB.books.find(b=>b.serial===serial);
+  if(bk) bk.status='Issued';
+  const mem=DB.members.find(m=>m.id===member);
+  DB.issues.push({id:DB.nextId(DB.issues,'ISS'),serial,bookName,author,memberId:member,memberName:mem?`${mem.firstName} ${mem.lastName}`:'',issueDate:issDate,dueDate:retDate,actualReturn:null});
+  DB.requests.push({id:DB.nextId(DB.requests,'REQ'),memberId:member,bookName,reqDate:issDate,fulfilledDate:issDate});
+  document.getElementById('success-msg').textContent=`"${bookName}" issued to ${mem?mem.firstName+' '+mem.lastName:member}. Due: ${retDate}`;
+  showPg('success');
+}
+
+/* ========= RETURN BOOK ========= */
+function pgReturnBook(c){
+  setTb('Return Book','Process a book return');
+  const open=DB.issues.filter(i=>!i.actualReturn);
+  c.innerHTML=`
+    <div class="pg-title">Return Book</div>
+    <div class="pg-sub">All fields except Remarks are required. Confirm leads to Pay Fine page.</div>
+    <div class="card">
+      <div class="f2" style="gap:14px">
+        <div class="fg"><label>Book / Movie Name *</label>
+          <select id="rb-book" onchange="rbPop()">
+            <option value="">-- Select Book / Movie --</option>
+            ${open.map(i=>`<option value="${i.id}">${esc(i.bookName)} (${i.memberId})</option>`).join('')}
+          </select></div>
+        <div class="fg"><label>Author / Director (auto-populated, non-editable)</label>
+          <input type="text" id="rb-author" readonly></div>
+        <div class="fg"><label>Serial No * (mandatory, auto-populated)</label>
+          <input type="text" id="rb-serial" readonly></div>
+        <div class="fg"><label>Issue Date (auto-populated, non-editable)</label>
+          <input type="text" id="rb-issue" readonly></div>
+        <div class="fg"><label>Return Date * (pre-filled; can be earlier or later — fine calculated if late)</label>
+          <input type="date" id="rb-return"></div>
+        <div class="fg"><label>Remarks (Non-Mandatory)</label>
+          <input type="text" id="rb-remarks" placeholder="Optional"></div>
+      </div>
+      <div class="err" id="rb-err"></div>
+      <div class="factions">
+        <button class="btn btn-g" onclick="showPg('cancel')">Cancel</button>
+        <button class="btn btn-p" onclick="submitReturn()">Confirm → Pay Fine</button>
+      </div>
+    </div>`;
+}
+
+function rbPop(){
+  const iss=DB.issues.find(i=>i.id===v('rb-book')); if(!iss) return;
+  document.getElementById('rb-author').value=iss.author;
+  document.getElementById('rb-serial').value=iss.serial;
+  document.getElementById('rb-issue').value=iss.issueDate;
+  document.getElementById('rb-return').value=iss.dueDate; // pre-filled, editable
+}
+
+function submitReturn(){
+  const id=v('rb-book');
+  const serial=document.getElementById('rb-serial').value;
+  const retDate=v('rb-return');
+  if(!id){ showErr('rb-err','Name of Book is required.'); return; }
+  if(!serial){ showErr('rb-err','Serial No is mandatory.'); return; }
+  if(!retDate){ showErr('rb-err','Return Date is required.'); return; }
+  showErr('rb-err','');
+  const iss=DB.issues.find(i=>i.id===id);
+  // Spec: "With confirm option, user is taken to Pay Fine page irrespective of whether fine is there or not"
+  renderPayFine(document.getElementById('main-content'), iss, retDate);
+}
+
+/* ========= PAY FINE ========= */
+function renderPayFine(c, iss, actualReturn){
+  setTb('Pay Fine','Fine calculation and payment');
+  const fine=DB.calcFine(iss.dueDate, actualReturn);
+  c.innerHTML=`
+    <div class="pg-title">Pay Fine</div>
+    <div class="pg-sub">All fields are populated. Fine Paid and Remarks are manual.</div>
+    <div class="card">
+      <div class="f3" style="gap:14px">
+        <div class="fg"><label>Book / Movie Name</label><input type="text" value="${esc(iss.bookName)}" readonly></div>
+        <div class="fg"><label>Author / Director</label><input type="text" value="${esc(iss.author)}" readonly></div>
+        <div class="fg"><label>Serial No</label><input type="text" value="${esc(iss.serial)}" readonly></div>
+        <div class="fg"><label>Issue Date</label><input type="date" value="${iss.issueDate}" readonly></div>
+        <div class="fg"><label>Return Date (due date)</label><input type="date" value="${iss.dueDate}" readonly></div>
+        <div class="fg"><label>Actual Return Date</label>
+          <input type="date" id="pf-actual" value="${actualReturn}" onchange="pfRecalc('${iss.dueDate}')"></div>
+      </div>
+      <div style="display:flex;align-items:center;gap:24px;flex-wrap:wrap;margin:16px 0;padding:16px;background:var(--surface2);border-radius:4px">
+        <div>
+          <div style="font-size:12px;color:var(--muted);margin-bottom:4px">Fine Calculated (₹2 / day overdue)</div>
+          <input type="text" id="pf-calc" value="₹${fine}" readonly
+            style="width:120px;font-family:'Playfair Display',serif;font-size:22px;background:transparent;border:none;color:${fine>0?'var(--red)':'var(--green)'}">
+        </div>
+        <div id="pf-paid-wrap">
+          ${fine>0
+            ? `<label class="ci"><input type="checkbox" id="pf-paid"> Fine Paid (must be checked to proceed)</label>`
+            : `<span style="color:var(--green);font-size:13px">✓ No fine due — click Confirm to complete</span>`}
+        </div>
+      </div>
+      <div class="fg"><label>Remarks (Non-Mandatory)</label><textarea id="pf-remarks" rows="2"></textarea></div>
+      <div class="err" id="pf-err"></div>
+      <div class="factions">
+        <button class="btn btn-g" onclick="showPg('cancel')">Cancel</button>
+        <button class="btn btn-p" onclick="submitFine('${iss.id}')">Confirm</button>
+      </div>
+    </div>`;
+  window._pfIssue=iss;
+}
+
+function pfRecalc(dueDate){
+  const actual=v('pf-actual');
+  const fine=DB.calcFine(dueDate,actual||DB.today());
+  const inp=document.getElementById('pf-calc');
+  inp.value='₹'+fine;
+  inp.style.color=fine>0?'var(--red)':'var(--green)';
+  document.getElementById('pf-paid-wrap').innerHTML=fine>0
+    ?`<label class="ci"><input type="checkbox" id="pf-paid"> Fine Paid (must be checked to proceed)</label>`
+    :`<span style="color:var(--green);font-size:13px">✓ No fine due — click Confirm to complete</span>`;
+}
+
+function pgPayFineStandalone(c){
+  setTb('Pay Fine','Select an active issue to process fine');
+  const open=DB.issues.filter(i=>!i.actualReturn);
+  c.innerHTML=`
+    <div class="pg-title">Pay Fine</div>
+    <div class="pg-sub">Select an active issue to load its details</div>
+    <div class="card">
+      <div class="fg" style="margin-bottom:14px">
+        <label>Select Active Issue *</label>
+        <select id="pf-sel">
+          <option value="">-- Select --</option>
+          ${open.map(i=>`<option value="${i.id}">${esc(i.bookName)} — ${i.memberId} (Due: ${i.dueDate})</option>`).join('')}
+        </select>
+      </div>
+      <div class="err" id="pf-sel-err">Please select an issue.</div>
+      <div class="factions"><button class="btn btn-p" onclick="pfSelLoad()">Load Issue</button></div>
+    </div>
+    <div id="pf-detail"></div>`;
+}
+
+function pfSelLoad(){
+  const id=v('pf-sel');
+  if(!id){ showErr('pf-sel-err','Please select an issue.'); return; }
+  showErr('pf-sel-err','');
+  const iss=DB.issues.find(i=>i.id===id);
+  renderPayFine(document.getElementById('pf-detail'), iss, DB.today());
+}
+
+function submitFine(issueId){
+  const actual=v('pf-actual')||DB.today();
+  const dispVal=document.getElementById('pf-calc')?.value||'₹0';
+  const fine=parseInt(dispVal.replace('₹',''))||0;
+  if(fine>0){
+    const paid=document.getElementById('pf-paid')?.checked;
+    if(!paid){ showErr('pf-err','Please check "Fine Paid" to confirm the fine has been collected before completing this return.'); return; }
+  }
+  showErr('pf-err','');
+  const iss=DB.issues.find(i=>i.id===issueId);
+  if(iss){
+    iss.actualReturn=actual;
+    const bk=DB.books.find(b=>b.serial===iss.serial);
+    if(bk) bk.status='Available';
+  }
+  document.getElementById('success-msg').textContent=`Return of "${iss?.bookName}" completed.${fine>0?' Fine ₹'+fine+' collected.':' No fine was due.'}`;
+  showPg('success');
+}
+
+/* ========= REPORTS ========= */
+function issuesTbl(arr){
+  if(!arr.length) return `<p style="color:var(--muted);font-size:13px;padding:6px 0">No records.</p>`;
+  const today=DB.today();
+  return `<table><thead><tr><th>ID</th><th>Book</th><th>Member</th><th>Issue Date</th><th>Due Date</th><th>Status</th></tr></thead><tbody>
+    ${arr.map(i=>{const ov=!i.actualReturn&&i.dueDate<today; return`<tr>
+    <td style="font-family:monospace;font-size:11px">${i.id}</td><td>${esc(i.bookName)}</td><td>${esc(i.memberName)}</td>
+    <td>${i.issueDate}</td><td>${i.dueDate}</td>
+    <td><span class="pill ${i.actualReturn?'p-avail':ov?'p-over':'p-issued'}">${i.actualReturn?'Returned':ov?'Overdue':'Active'}</span></td>
+    </tr>`}).join('')}</tbody></table>`;
+}
+
+function pgRepBooks(c){
+  setTb('Master List of Books');
+  const bks=DB.books.filter(b=>b.type==='book');
+  c.innerHTML=`<div class="pg-title">Master List of Books</div><div class="pg-sub">${bks.length} books</div>
+  <div class="card"><div class="tbl-wrap"><table><thead><tr><th>Serial No</th><th>Book Name</th><th>Author</th><th>Category</th><th>Status</th><th>Cost (₹)</th><th>Procurement Date</th></tr></thead><tbody>
+  ${bks.map(b=>`<tr><td style="font-family:monospace;font-size:11px">${b.serial}</td><td>${esc(b.name)}</td><td>${esc(b.author)}</td><td>${b.cat}</td>
+  <td><span class="pill ${b.status==='Available'?'p-avail':'p-issued'}">${b.status}</span></td><td>₹${b.cost}</td><td>${b.procDate}</td></tr>`).join('')}
+  </tbody></table></div></div>`;
+}
+
+function pgRepMovies(c){
+  setTb('Master List of Movies');
+  const mvs=DB.books.filter(b=>b.type==='movie');
+  c.innerHTML=`<div class="pg-title">Master List of Movies</div><div class="pg-sub">${mvs.length} movies</div>
+  <div class="card"><div class="tbl-wrap"><table><thead><tr><th>Serial No</th><th>Movie Name</th><th>Director</th><th>Category</th><th>Status</th><th>Cost (₹)</th><th>Procurement Date</th></tr></thead><tbody>
+  ${mvs.map(b=>`<tr><td style="font-family:monospace;font-size:11px">${b.serial}</td><td>${esc(b.name)}</td><td>${esc(b.author)}</td><td>${b.cat}</td>
+  <td><span class="pill ${b.status==='Available'?'p-avail':'p-issued'}">${b.status}</span></td><td>₹${b.cost}</td><td>${b.procDate}</td></tr>`).join('')}
+  </tbody></table></div></div>`;
+}
+
+function pgRepMembers(c){
+  setTb('Memberships');
+  c.innerHTML=`<div class="pg-title">Master List of Memberships</div><div class="pg-sub">${DB.members.length} members</div>
+  <div class="card"><div class="tbl-wrap"><table><thead><tr><th>Membership ID</th><th>Name</th><th>Contact</th><th>Address</th><th>Aadhar No</th><th>Start Date</th><th>End Date</th><th>Status</th><th>Fine (₹)</th></tr></thead><tbody>
+  ${DB.members.map(m=>`<tr>
+    <td style="font-family:monospace;font-size:11px;color:var(--gold)">${m.id}</td>
+    <td>${esc(m.firstName+' '+m.lastName)}</td><td>${m.contact}</td><td>${esc(m.address)}</td>
+    <td style="font-family:monospace;font-size:11px">${m.aadhar}</td><td>${m.startDate}</td><td>${m.endDate}</td>
+    <td><span class="pill ${m.status==='Active'?'p-avail':'p-inactive'}">${m.status}</span></td>
+    <td>${m.fine||0}</td></tr>`).join('')}
+  </tbody></table></div></div>`;
+}
+
+function pgRepActive(c){
+  setTb('Active Issues');
+  const ai=DB.issues.filter(i=>!i.actualReturn);
+  c.innerHTML=`<div class="pg-title">Active Issues</div><div class="pg-sub">${ai.length} active issues</div>
+  <div class="card"><div class="tbl-wrap">${issuesTbl(ai)}</div></div>`;
+}
+
+function pgRepOverdue(c){
+  setTb('Overdue Returns');
+  const today=DB.today();
+  const ov=DB.issues.filter(i=>!i.actualReturn&&i.dueDate<today);
+  c.innerHTML=`<div class="pg-title">Overdue Returns</div><div class="pg-sub">${ov.length} overdue</div>
+  <div class="card"><div class="tbl-wrap"><table><thead><tr><th>Serial No</th><th>Book/Movie</th><th>Member</th><th>Issue Date</th><th>Due Date</th><th>Fine Calculations (₹)</th></tr></thead><tbody>
+  ${ov.length?ov.map(i=>`<tr>
+    <td style="font-family:monospace;font-size:11px">${i.serial}</td><td>${esc(i.bookName)}</td><td>${esc(i.memberName)}</td>
+    <td>${i.issueDate}</td><td style="color:var(--red)">${i.dueDate}</td>
+    <td style="color:var(--red)">₹${DB.calcFine(i.dueDate,today)}</td></tr>`).join('')
+    :`<tr><td colspan="6" style="text-align:center;color:var(--green);padding:20px">✓ No overdue items</td></tr>`}
+  </tbody></table></div></div>`;
+}
+
+function pgRepRequests(c){
+  setTb('Pending Issue Requests');
+  c.innerHTML=`<div class="pg-title">Issue Requests</div><div class="pg-sub">${DB.requests.length} total requests</div>
+  <div class="card"><div class="tbl-wrap"><table><thead><tr><th>Request ID</th><th>Member ID</th><th>Book / Movie</th><th>Requested Date</th><th>Request Fulfilled Date</th></tr></thead><tbody>
+  ${DB.requests.map(r=>`<tr>
+    <td style="font-family:monospace;font-size:11px">${r.id}</td><td>${r.memberId}</td><td>${esc(r.bookName)}</td>
+    <td>${r.reqDate}</td><td>${r.fulfilledDate||'—'}</td>
+  </tr>`).join('')}
+  </tbody></table></div></div>`;
+}
+
+/* ========= MAINTENANCE ========= */
+function pgAddMembership(c){
+  setTb('Add Membership','Register a new member');
+  c.innerHTML=`
+    <div class="pg-title">Add Membership</div>
+    <div class="pg-sub">All fields are required</div>
+    <div class="card">
+      <div class="f2" style="gap:14px">
+        <div class="fg"><label>First Name *</label><input type="text" id="am-fn"></div>
+        <div class="fg"><label>Last Name *</label><input type="text" id="am-ln"></div>
+        <div class="fg"><label>Contact Number *</label><input type="text" id="am-ct"></div>
+        <div class="fg"><label>Contact Address *</label><input type="text" id="am-ad"></div>
+        <div class="fg"><label>Aadhar Card No *</label><input type="text" id="am-aa" placeholder="XXXX-XXXX-XXXX"></div>
+        <div class="fg"><label>Start Date *</label><input type="date" id="am-sd" value="${DB.today()}"></div>
+        <div class="fg full"><label>Membership Duration * (default: 6 months)</label>
+          <div class="rg">
+            <label class="ri"><input type="radio" name="am-dur" value="6"  checked> 6 Months</label>
+            <label class="ri"><input type="radio" name="am-dur" value="12"> 1 Year</label>
+            <label class="ri"><input type="radio" name="am-dur" value="24"> 2 Years</label>
+          </div>
+        </div>
+      </div>
+      <div class="err" id="am-err"></div>
+      <div class="factions">
+        <button class="btn btn-g" onclick="nav('home-adm')">Cancel</button>
+        <button class="btn btn-p" onclick="submitAddMem()">Add Member</button>
+      </div>
+    </div>`;
+}
+
+function submitAddMem(){
+  const fn=v('am-fn'),ln=v('am-ln'),ct=v('am-ct'),ad=v('am-ad'),aa=v('am-aa'),sd=v('am-sd');
+  if(!fn||!ln||!ct||!ad||!aa||!sd){ showErr('am-err','All fields are required. Please fill in every field.'); return; }
+  showErr('am-err','');
+  const dur=parseInt(document.querySelector('input[name="am-dur"]:checked').value);
+  const end=new Date(sd); end.setMonth(end.getMonth()+dur);
+  const id=DB.nextId(DB.members,'MEM');
+  DB.members.push({id,firstName:fn,lastName:ln,contact:ct,address:ad,aadhar:aa,startDate:sd,endDate:end.toISOString().split('T')[0],status:'Active',fine:0});
+  document.getElementById('success-msg').textContent=`Membership created for ${fn} ${ln}. ID: ${id}`;
+  showPg('success');
+}
+
+function pgUpdMembership(c){
+  setTb('Update Membership','Extend or cancel');
+  c.innerHTML=`
+    <div class="pg-title">Update Membership</div>
+    <div class="pg-sub">Membership Number is mandatory — rest of fields auto-populate</div>
+    <div class="card">
+      <div class="fg" style="margin-bottom:14px"><label>Membership Number *</label>
+        <div class="srow">
+          <input type="text" id="um-id" placeholder="e.g. MEM-001" list="um-dl">
+          <datalist id="um-dl">${DB.members.map(m=>`<option value="${m.id}">`).join('')}</datalist>
+          <button class="btn btn-p btn-sm" onclick="umLoad()">Load</button>
+        </div>
+      </div>
+      <div id="um-det" style="display:none">
+        <div class="f2" style="gap:14px;margin-bottom:14px">
+          <div class="fg"><label>Start Date</label><input type="text" id="um-sd" readonly></div>
+          <div class="fg"><label>Current End Date</label><input type="text" id="um-ed" readonly></div>
+        </div>
+        <div class="fg" style="margin-bottom:12px"><label>Extend Membership By (default: 6 months)</label>
+          <div class="rg">
+            <label class="ri"><input type="radio" name="um-ext" value="6"  checked> 6 Months</label>
+            <label class="ri"><input type="radio" name="um-ext" value="12"> 1 Year</label>
+            <label class="ri"><input type="radio" name="um-ext" value="24"> 2 Years</label>
+          </div>
+        </div>
+        <div class="fg" style="margin-bottom:10px"><label>Cancel Membership</label>
+          <label class="ci"><input type="checkbox" id="um-cancel"> Cancel this membership (mark as inactive)</label>
+        </div>
+        <div class="err" id="um-err"></div>
+        <div class="factions">
+          <button class="btn btn-g" onclick="nav('home-adm')">Cancel</button>
+          <button class="btn btn-p" onclick="submitUpdMem()">Update</button>
+        </div>
+      </div>
+    </div>`;
+}
+
+function umLoad(){
+  const m=DB.members.find(m=>m.id===v('um-id'));
+  if(!m){ alert('Member not found.'); return; }
+  document.getElementById('um-sd').value=m.startDate;
+  document.getElementById('um-ed').value=m.endDate;
+  document.getElementById('um-det').style.display='block';
+}
+function submitUpdMem(){
+  const m=DB.members.find(m=>m.id===v('um-id'));
+  if(!m){ showErr('um-err','Load a valid member first.'); return; }
+  if(document.getElementById('um-cancel').checked){
+    m.status='Inactive';
+    document.getElementById('success-msg').textContent=`Membership ${m.id} has been cancelled.`;
+  } else {
+    const dur=parseInt(document.querySelector('input[name="um-ext"]:checked').value);
+    const end=new Date(m.endDate); end.setMonth(end.getMonth()+dur);
+    m.endDate=end.toISOString().split('T')[0];
+    document.getElementById('success-msg').textContent=`Membership ${m.id} extended to ${m.endDate}.`;
+  }
+  showPg('success');
+}
+
+function pgAddBook(c){
+  setTb('Add Book / Movie','Add to inventory');
+  c.innerHTML=`
+    <div class="pg-title">Add Book / Movie</div>
+    <div class="pg-sub">All fields are required</div>
+    <div class="card">
+      <div class="fg" style="margin-bottom:14px"><label>Type (default: Book)</label>
+        <div class="rg">
+          <label class="ri"><input type="radio" name="ab-t" value="book"  checked> Book</label>
+          <label class="ri"><input type="radio" name="ab-t" value="movie"> Movie</label>
+        </div>
+      </div>
+      <div class="f2" style="gap:14px">
+        <div class="fg"><label>Book / Movie Name *</label><input type="text" id="ab-nm"></div>
+        <div class="fg"><label>Author / Director *</label><input type="text" id="ab-au"></div>
+        <div class="fg"><label>Category *</label>
+          <select id="ab-cat"><option value="">-- Select Category --</option>
+            <option>Science</option><option>Economics</option><option>Fiction</option>
+            <option>Children</option><option>Personal Development</option>
+          </select></div>
+        <div class="fg"><label>Cost (₹) *</label><input type="text" id="ab-ct"></div>
+        <div class="fg"><label>Date of Procurement *</label><input type="date" id="ab-dt" value="${DB.today()}"></div>
+        <div class="fg"><label>Quantity / Copies * (default: 1)</label><input type="text" id="ab-qty" value="1"></div>
+      </div>
+      <div class="err" id="ab-err"></div>
+      <div class="factions">
+        <button class="btn btn-g" onclick="nav('home-adm')">Cancel</button>
+        <button class="btn btn-p" onclick="submitAddBook()">Add to Inventory</button>
+      </div>
+    </div>`;
+}
+
+function submitAddBook(){
+  const nm=v('ab-nm'),au=v('ab-au'),cat=v('ab-cat'),ct=v('ab-ct'),dt=v('ab-dt');
+  const qty=parseInt(v('ab-qty'))||1;
+  const type=document.querySelector('input[name="ab-t"]:checked').value;
+  if(!nm||!au||!cat||!ct||!dt){ showErr('ab-err','All fields are required. An error has occurred — please fill in every field.'); return; }
+  if(isNaN(parseFloat(ct))){ showErr('ab-err','Cost must be a valid number.'); return; }
+  showErr('ab-err','');
+  const codes={Science:'SC',Economics:'EC',Fiction:'FC',Children:'CH','Personal Development':'PD'};
+  const code=codes[cat]||'XX', sfx=type==='book'?'B':'M';
+  for(let i=0;i<qty;i++){
+    const num=(DB.books.filter(b=>b.cat===cat&&b.type===type).length+i+1).toString().padStart(6,'0');
+    DB.books.push({serial:`${code}-${sfx}-${num}`,name:nm,author:au,cat,status:'Available',cost:parseFloat(ct),procDate:dt,type});
+  }
+  document.getElementById('success-msg').textContent=`${qty} copy/copies of "${nm}" added to inventory.`;
+  showPg('success');
+}
+
+function pgUpdBook(c){
+  setTb('Update Book / Movie');
+  c.innerHTML=`
+    <div class="pg-title">Update Book / Movie</div>
+    <div class="pg-sub">All fields are required</div>
+    <div class="card">
+      <div class="fg" style="margin-bottom:14px"><label>Type (default: Book)</label>
+        <div class="rg">
+          <label class="ri"><input type="radio" name="ub-t" value="book" checked> Book</label>
+          <label class="ri"><input type="radio" name="ub-t" value="movie"> Movie</label>
+        </div>
+      </div>
+      <div class="f2" style="gap:14px;margin-bottom:14px">
+        <div class="fg"><label>Book / Movie Name</label>
+          <input type="text" id="ub-nm" list="ub-nm-dl">
+          <datalist id="ub-nm-dl">${[...new Set(DB.books.map(b=>b.name))].map(n=>`<option value="${esc(n)}">`).join('')}</datalist>
+        </div>
+        <div class="fg"><label>Serial No</label>
+          <input type="text" id="ub-sn" list="ub-sn-dl">
+          <datalist id="ub-sn-dl">${DB.books.map(b=>`<option value="${b.serial}">`).join('')}</datalist>
+        </div>
+      </div>
+      <button class="btn btn-p btn-sm" style="margin-bottom:16px" onclick="ubLoad()">Load Book / Movie</button>
+      <div id="ub-det" style="display:none">
+        <div class="f2" style="gap:14px">
+          <div class="fg"><label>Status *</label>
+            <select id="ub-st"><option value="Available">Available</option><option value="Issued">Issued</option><option value="Lost">Lost</option></select></div>
+          <div class="fg"><label>Date *</label><input type="date" id="ub-dt" value="${DB.today()}"></div>
+        </div>
+        <div class="err" id="ub-err"></div>
+        <div class="factions">
+          <button class="btn btn-g" onclick="nav('home-adm')">Cancel</button>
+          <button class="btn btn-p" onclick="submitUpdBook()">Update</button>
+        </div>
+      </div>
+    </div>`;
+}
+
+function ubLoad(){
+  const nm=v('ub-nm'),sn=v('ub-sn');
+  if(!nm&&!sn){ alert('Enter a book name or serial number.'); return; }
+  const b=DB.books.find(b=>(sn&&b.serial===sn)||(nm&&b.name===nm));
+  if(!b){ alert('Book/Movie not found.'); return; }
+  document.getElementById('ub-st').value=b.status;
+  document.getElementById('ub-det').style.display='block';
+  window._ubSerial=b.serial;
+}
+function submitUpdBook(){
+  const b=DB.books.find(b=>b.serial===window._ubSerial);
+  if(!b){ showErr('ub-err','Load a book/movie first.'); return; }
+  if(!v('ub-dt')){ showErr('ub-err','Date is required. An error has occurred — please fill in all fields.'); return; }
+  showErr('ub-err','');
+  b.status=document.getElementById('ub-st').value;
+  document.getElementById('success-msg').textContent=`"${b.name}" status updated to ${b.status}.`;
+  showPg('success');
+}
+
+function pgUserMgmt(c){
+  setTb('User Management');
+  c.innerHTML=`
+    <div class="pg-title">User Management</div>
+    <div class="pg-sub">Name is mandatory. By default: New User selected.</div>
+    <div class="card">
+      <div class="fg" style="margin-bottom:14px"><label>User Type (default: New User)</label>
+        <div class="rg">
+          <label class="ri"><input type="radio" name="um-tp" value="new"      checked onclick="umTpToggle(false)"> New User</label>
+          <label class="ri"><input type="radio" name="um-tp" value="existing"        onclick="umTpToggle(true)">  Existing User</label>
+        </div>
+      </div>
+      <div id="um-ex-wrap" style="display:none;margin-bottom:14px">
+        <div class="fg"><label>Select Existing User</label>
+          <select id="um-ex-sel" onchange="umExLoad()">
+            <option value="">-- Select --</option>
+            ${DB.users.map(u=>`<option value="${u.id}">${u.id} – ${esc(u.name)}</option>`).join('')}
+          </select></div>
+      </div>
+      <div class="f2" style="gap:14px">
+        <div class="fg"><label>Name *</label><input type="text" id="um-nm"></div>
+        <div class="fg"><label>User ID *</label><input type="text" id="um-uid" placeholder="Login ID"></div>
+      </div>
+      <div style="display:flex;gap:20px;margin:12px 0">
+        <label class="ci"><input type="checkbox" id="um-act" checked> Active (unchecked = inactive, not an admin)</label>
+        <label class="ci"><input type="checkbox" id="um-adm"> Admin</label>
+      </div>
+      <div class="err" id="um-err"></div>
+      <div class="factions">
+        <button class="btn btn-g" onclick="nav('home-adm')">Cancel</button>
+        <button class="btn btn-p" onclick="submitUserMgmt()">Save User</button>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title">Current Users</div>
+      <div class="tbl-wrap"><table><thead><tr><th>ID</th><th>Name</th><th>Role</th><th>Status</th></tr></thead><tbody>
+      ${DB.users.map(u=>`<tr>
+        <td style="font-family:monospace;font-size:11px">${u.id}</td><td>${esc(u.name)}</td><td>${u.role}</td>
+        <td><span class="pill ${u.active?'p-avail':'p-inactive'}">${u.active?'Active':'Inactive'}</span></td>
+      </tr>`).join('')}</tbody></table></div>
+    </div>`;
+}
+
+function umTpToggle(ex){ document.getElementById('um-ex-wrap').style.display=ex?'block':'none'; }
+function umExLoad(){
+  const u=DB.users.find(u=>u.id===v('um-ex-sel')); if(!u) return;
+  document.getElementById('um-nm').value=u.name;
+  document.getElementById('um-uid').value=u.id;
+  document.getElementById('um-act').checked=u.active;
+  document.getElementById('um-adm').checked=u.role==='admin';
+}
+function submitUserMgmt(){
+  const nm=v('um-nm'),uid=v('um-uid');
+  const act=document.getElementById('um-act').checked;
+  const adm=document.getElementById('um-adm').checked;
+  if(!nm){ showErr('um-err','Name is mandatory.'); return; }
+  showErr('um-err','');
+  const type=document.querySelector('input[name="um-tp"]:checked').value;
+  if(type==='new'){
+    if(!uid){ showErr('um-err','User ID is required for new users.'); return; }
+    if(DB.users.find(u=>u.id===uid)){ showErr('um-err','User ID already exists. Choose a different one.'); return; }
+    DB.users.push({id:uid,name:nm,role:adm?'admin':'user',pass:uid,active:act});
+    document.getElementById('success-msg').textContent=`New user "${nm}" (${uid}) created. Default password = User ID.`;
+  } else {
+    const u=DB.users.find(u=>u.id===uid);
+    if(!u){ showErr('um-err','User not found. Please load an existing user.'); return; }
+    u.name=nm; u.active=act; u.role=adm?'admin':'user';
+    document.getElementById('success-msg').textContent=`User "${nm}" updated successfully.`;
+  }
+  showPg('success');
+}
+</script>
+</body>
+</html>
